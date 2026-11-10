@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="googlebot" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f0f10">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -348,8 +349,11 @@ function findVid(id){ return (S.feed?.vids||[]).concat(S.disc?.vids||[]).find(v 
 function play(id){
   S.seen[id] = Date.now(); save('seen');
   const v = findVid(id) || {};
+  const web = /^https?:$/.test(location.protocol);
+  if (!web) { window.open('https://www.youtube.com/watch?v=' + id, '_blank'); render(); return; }
+  const src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin) + '&widget_referrer=' + encodeURIComponent(location.href);
   $('#layer').innerHTML = `<div class="modal" id="mod"><div class="player">
-    <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <div class="frame"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
     <div class="row"><div style="flex:1"><div style="font-weight:500">${esc(v.title)}</div><div class="m">${esc(v.chName)}</div></div>
     <a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Open op YouTube ↗</a>
     <button id="close">✕ Sluiten</button></div></div></div>`;
