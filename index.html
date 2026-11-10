@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MijnTube">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Mijn Tube</title>
+<style>
+:root{--bg:#0f0f10;--card:#18181b;--card2:#202024;--line:#2c2c31;--text:#ededee;--muted:#9a9aa2;--dim:#66666e;--accent:#ff5a4e;--accent2:#ffb36b;--ok:#6fd39a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+button:hover{border-color:#44444b}
+header{position:sticky;top:0;z-index:5;background:rgba(15,15,16,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 20px}
+.logo{font-weight:700;letter-spacing:.2px;font-size:18px}
+.logo span{color:var(--accent)}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:none;color:var(--muted);padding:6px 12px;border-radius:999px}
+.tab.on{background:var(--card2);color:var(--text)}
+.sp{flex:1}
+.status{color:var(--dim);font-size:12px}
+main{max-width:1280px;margin:0 auto;padding:20px}
+h2{font-size:15px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:34px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px 16px}
+.v{position:relative;min-width:0}
+.th{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--card);cursor:pointer}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.dur{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.8);font-size:11px;padding:1px 5px;border-radius:4px}
+.v.seen .th img{opacity:.35}
+.v.seen .th::after{content:"✓ gezien";position:absolute;left:6px;bottom:6px;font-size:11px;background:rgba(0,0,0,.8);padding:1px 6px;border-radius:4px}
+.t{font-size:14px;font-weight:500;margin:8px 0 2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.m{font-size:12px;color:var(--muted)}
+.m b{font-weight:500;color:#c9c9cf}
+.badge{display:inline-block;font-size:11px;color:var(--accent2);border:1px solid #4a3a2a;border-radius:999px;padding:0 7px;margin-top:5px}
+.acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.acts button{padding:3px 9px;font-size:12px}
+.acts .up.on{border-color:var(--ok);color:var(--ok)}
+.more{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);border:none;border-radius:6px;padding:2px 8px;opacity:0;transition:.15s}
+.v:hover .more{opacity:1}
+.menu{position:absolute;top:32px;right:6px;z-index:3;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:4px;display:flex;flex-direction:column;min-width:170px}
+.menu button{border:none;background:none;text-align:left;padding:7px 10px;font-size:13px}
+.menu button:hover{background:#2a2a30}
+.filters{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.filters input[type=search]{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:220px}
+.chip{font-size:13px;padding:4px 11px;border-radius:999px}
+.chip.on{background:var(--text);color:#111;border-color:var(--text)}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.player{width:min(1100px,100%)}
+.player .frame{aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.player iframe{width:100%;height:100%;border:0}
+.player .row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.player a{color:var(--accent2)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;width:min(620px,100%);max-height:90vh;overflow:auto}
+.panel label{display:block;font-size:13px;color:var(--muted);margin:14px 0 4px}
+.panel input[type=text],.panel input[type=number],.panel textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.panel textarea{min-height:200px}
+.key{font-family:ui-monospace,Menlo,monospace}
+.hint{font-size:12px;color:var(--dim);margin-top:4px}
+.prog{height:2px;background:var(--accent);width:0;transition:width .2s}
+header{padding-top:env(safe-area-inset-top)}
+main{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+@media (max-width:640px){
+ .bar{flex-wrap:wrap;gap:10px;padding:10px 14px}
+ .logo{font-size:17px}
+ .tabs{order:3;width:100%}
+ .tab{flex:1;padding:8px}
+ .status{display:none}
+ main{padding:14px}
+ .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -14px 28px;padding:0 14px}
+ .strip .v{flex:0 0 72%;scroll-snap-align:start}
+ .grid{grid-template-columns:1fr;gap:18px}
+ .more{opacity:1}
+ .acts button{padding:6px 10px}
+ .filters input[type=search]{min-width:0;flex:1}
+ .modal{padding:0;align-items:flex-start;padding-top:env(safe-area-inset-top)}
+ .player .frame{border-radius:0}
+ .player .row{padding:0 14px;flex-wrap:wrap}
+ .panel{border-radius:0;max-height:100vh;height:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">Mijn<span>Tube</span></div>
+    <div class="tabs">
+      <button class="tab on" data-tab="feed">Mijn kanalen</button>
+      <button class="tab" data-tab="disc">Ontdekken</button>
+    </div>
+    <div class="sp"></div>
+    <span class="status" id="status"></span>
+    <button id="refresh" title="Ververs">↻ Ververs</button>
+    <button id="settingsBtn" title="Instellingen">⚙</button>
+  </div>
+  <div class="prog" id="prog"></div>
+</header>
+<main id="main"></main>
+<div id="layer"></div>
+
+<script>
+const SUBS = [{"id": "UCOmjR-JVOshlZbUoQYOCxWg", "n": "Dr. G Explains"}, {"id": "UC19xLluI7dG093Gmw57BhHw", "n": "NFKRZ"}, {"id": "UCa6vGFO9ty8v5KZJXQxdhaw", "n": "Jimmy Kimmel Live"}, {"id": "UCc0kHafEIzm6PiqyrsC5lyg", "n": "BOOS"}, {"id": "UCZU-vIoeB1e3by8mVaVLwIg", "n": "Left Laser"}, {"id": "UCTQs-6DP7Vu0uWwFa9KHYCA", "n": "Caolan Robertson"}, {"id": "UCASM0cgfkJxQ1ICmRilfHLw", "n": "Patrick Boyle"}, {"id": "UCwWhs_6x42TyRM4Wstoq8HA", "n": "The Daily Show"}, {"id": "UCc4CKDn37WDjhy-MF3eqjFw", "n": "DJE MEDIA"}, {"id": "UCpnkp_D4FLPCiXOmDhoAeYA", "n": "UnusualVideos"}, {"id": "UCqcbQf6yw5KzRoDDcZ_wBSw", "n": "Wes Roth"}, {"id": "UC28n0tlcNSa1iPe5mettocg", "n": "voidzilla"}, {"id": "UCIgnGlGkVRhd4qNFcEwLL4A", "n": "AI Search"}, {"id": "UCn7xknPbWDjGQCzBLhtubiA", "n": "LUBACH"}, {"id": "UCyeAtCy_GiWYkWGWmgoiyiA", "n": "Raw America"}, {"id": "UCcPLRur6-XtfpWJtDt0Fvrg", "n": "Matt Spears"}, {"id": "UCT3v6vL2H5HK4loLMc8pmCw", "n": "VisualPolitik EN"}, {"id": "UC3XTzVzaHQEd30rQbuvCtTQ", "n": "LastWeekTonight"}, {"id": "UCwffSP9kO8pMZVr1Ugqvbzw", "n": "HTX Studio"}, {"id": "UCpa-Zb0ZcQjTCPP1Dx_1M8Q", "n": "LegalEagle"}, {"id": "UCy7BaXfIrADXjYycsgXL9zg", "n": "Coolest Thing"}, {"id": "UC16niRr50-MSBwiO3YDb3RA", "n": "BBC News"}, {"id": "UCdbetV_5wxUnBTdb_d51qoA", "n": "Synthet"}, {"id": "UCFQMnBA3CS502aghlcr0_aw", "n": "Coffeezilla"}, {"id": "UCx8Thl4BbkOwslTGXzPJx0A", "n": "Captain Steeeve"}, {"id": "UC-eegKVWEgBCa4OzjnK_PtA", "n": "TLDR News EU"}, {"id": "UCshObcm-nLhbu8MY50EZ5Ng", "n": "Benn Jordan"}, {"id": "UCUEmaeh13ai1ivT5wzz5Lhg", "n": "Maxinomics"}, {"id": "UCUMZ7gohGI9HcU9VNsr2FJQ", "n": "Bloomberg Originals"}, {"id": "UCJ52xpIoq5aKaIU_ZP40-nQ", "n": "House of El"}, {"id": "UCwN9hjjqUl9VB51um_73hVg", "n": "NPO Start Next"}, {"id": "UCbfYPyITQ-7l4upoX8nvctg", "n": "Two Minute Papers"}, {"id": "UC-2YHgc363EdcusLIBbgxzg", "n": "Joe Scott"}, {"id": "UCLkMfHagXmy6GNHiHtsoDrg", "n": "Eric Andre"}, {"id": "UCIq_FIJJtgt3W446i0jCvFQ", "n": "Mr. Weatherman Europe"}, {"id": "UCFy846QdKs3LbLgBpSqPcdg", "n": "The Kiffness"}, {"id": "UCm22FAXZMw1BaWeFszZxUKw", "n": "Kitboga"}, {"id": "UCgWZYUZjiidjWgfs95pJrWg", "n": "Ableton"}, {"id": "UCK1XzxcKXB_v_dcw_tflC1A", "n": "OBF"}, {"id": "UCDmYblK8ScOM4LEfXCQNzCw", "n": "Bright"}, {"id": "UCezOhPRojzE_Du7XQodCKxQ", "n": "Ryan Inis"}, {"id": "UCsbtkfbAwlB7VBVchnuVFYQ", "n": "jakeshotfriend"}, {"id": "UC8-Th83bH_thdKZDJCrn88g", "n": "The Tonight Show Starring Jimmy Fallon"}, {"id": "UCqoAEDirJPjEUFcF2FklnBA", "n": "StarTalk"}, {"id": "UCTNGD4xzxWOWWNAoZnXxhbA", "n": "Vlad Ncl"}, {"id": "UCExcZNwh_3Mwm4fF4VSiu2w", "n": "Nieuwsuur"}, {"id": "UCY1kMZp36IQSyNx_9h4mpCg", "n": "Mark Rober"}, {"id": "UCVQGtUcRjHTQLTTu-5s9_4Q", "n": "Brew"}, {"id": "UCBa659QWEk1AI4Tg--mrJ2A", "n": "Tom Scott"}, {"id": "UC4DaqJUbVn5JHTekLwZPNuA", "n": "Husk IRL"}, {"id": "UCqnbDFdCpuN8CMEg0VuEBqA", "n": "The New York Times"}, {"id": "UCZaT_X_mc0BI-djXOlfhqWQ", "n": "VICE News"}, {"id": "UCK0z0_5uL7mb9IjntOKi5XQ", "n": "The Atlantic"}, {"id": "UCsXVk37bltHxD1rDPwtNM8Q", "n": "Kurzgesagt – In a Nutshell"}, {"id": "UCK7tptUDHh-RYDsdxO1-5QQ", "n": "The Wall Street Journal"}, {"id": "UCn8V3KNSgDr1Dai77_y8JrQ", "n": "Psyched Substance"}, {"id": "UC7yF9tV4xWEMZkel7q8La_w", "n": "PeterSripol"}, {"id": "UC4QZ_LsYcvcq7qOsOhpAX4A", "n": "ColdFusion"}, {"id": "UCftwRNsjfRo08xYE31tkiyw", "n": "WIRED"}, {"id": "UCeE3lj6pLX_gCd0Yvns517Q", "n": "Ozzy Man Reviews"}, {"id": "UCcyq283he07B7_KUX07mmtA", "n": "Business Insider"}, {"id": "UCEIwxahdLz7bap-VDs9h35A", "n": "Steve Mould"}, {"id": "UC_UE7maDDe8OqqC8-TtXaKg", "n": "Reckless Ben"}, {"id": "UCRBwLPbXGsI2cJe9W1zfSjQ", "n": "Just Have a Think"}, {"id": "UC1VLQPn9cYSqx8plbk9RxxQ", "n": "The Action Lab"}, {"id": "UCmdI-Y9DGqIUzVXGZ-o1pOQ", "n": "Shark Tank Australia"}, {"id": "UCiDJtJKMICpb9B1qf7qjEOA", "n": "Adam Savage’s Tested"}, {"id": "UCSpFnDQr88xCZ80N-X7t0nQ", "n": "Corridor Crew"}, {"id": "UCGlMOIZ1A3zluwLXTGpzZfw", "n": "Richard J Murphy"}, {"id": "UCiCpMeum9CVQLnU7DMr3feA", "n": "Secondhand Movie Co"}, {"id": "UCPD_bxCRGpmmeQcbe2kpPaA", "n": "First We Feast"}, {"id": "UCvz84_Q0BbvZThy75mbd-Dg", "n": "Zack D. Films"}, {"id": "UCHC4G4X-OR5WkY-IquRGa3Q", "n": "Tom Scott plus"}, {"id": "UChUAaNhjdc1aN5f_29BPrhw", "n": "MythBusters"}, {"id": "UCddiUEpeqJcYeBxX1IVBKvQ", "n": "The Verge"}, {"id": "UCNmnXNeAFnk4w8-zb-TbMdQ", "n": "NPO Start"}, {"id": "UCG4Hp1KbGw4e02N7FpPXDgQ", "n": "The Bulwark"}, {"id": "UCknLrEdhRCp1aegoMqRaCZg", "n": "DW News"}, {"id": "UCSvxjA3B1UURjGrdAJX_Yjg", "n": "Streaky"}, {"id": "UChqUTb7kYRX8-EiaN3XFrSQ", "n": "Reuters"}, {"id": "UC4eN7PS9mi8__4EYxy6VpFw", "n": "Esther Perel"}, {"id": "UCu4XcDBdnZkV6-5z2f16M0g", "n": "Real Stories"}, {"id": "UCINb0wqPz-A0dV9nARjJlOQ", "n": "The Dodo"}, {"id": "UCDyz_T0uPt66D_b4kukhdDA", "n": "Cesar Millan"}, {"id": "UCZYTClx2T1of7BRZ86-8fow", "n": "SciShow"}, {"id": "UCp0N3JPuZodsORz_WAK2RgA", "n": "AM I?"}, {"id": "UCrT7scISDUdA_qfzcrw0-Jg", "n": "Laughing House"}, {"id": "UCyQ-DUV6lZgoL8wiPusYiUg", "n": "Amelia Dimoldenberg"}, {"id": "UC415bOPUcGSamy543abLmRA", "n": "Cleo Abram"}, {"id": "UCq5BNp_Qlqan4risGrwhL0g", "n": "The Wildlanders"}, {"id": "UCORX3Cl7ByidjEgzSCgv9Yw", "n": "Anastasi In Tech"}, {"id": "UCqVEHtQoXHmUCfJ-9smpTSg", "n": "Answer in Progress"}, {"id": "UCvJiYiBUbw4tmpRSZT2r1Hw", "n": "Science Channel"}, {"id": "UCf63l7Wp_wX7T-5ChM_Km9Q", "n": "NOS+"}, {"id": "UC04KsGq3npibMCE9Td3mVDg", "n": "Cheddar"}, {"id": "UCJqo83iPTdpMNOT-3O-RnKA", "n": "Blueprint"}, {"id": "UCsooa4yRKGN_zEE8iknghZA", "n": "TED-Ed"}, {"id": "UCAuUUnT6oDeKwE6v1NGQxug", "n": "TED"}, {"id": "UCwmZiChSryoWQCZMIQezgTg", "n": "BBC Earth"}, {"id": "UCMOqf8ab-42UUQIdVoKwjlQ", "n": "Practical Engineering"}, {"id": "UCjtUS7-SZTi6pXjUbzGHQCg", "n": "Undecided with Matt Ferrell"}, {"id": "UCLXo7UDZvByw2ixzpQCufnA", "n": "Vox"}, {"id": "UCF92i0u6TJBQiIoB3I2pITQ", "n": "Carter Brady"}, {"id": "UCfR3KjCz7UAI_2J7S_wn1Xw", "n": "Vochlea Music"}, {"id": "UCgF23VqDjioQVQqHUzzSe9g", "n": "Learn Portuguese with PortuguesePod101.com"}, {"id": "UCDYyCQAk60CqabvkL5gU3Mw", "n": "KOTSUMET"}, {"id": "UCCvcd0FYi58LwyTQP9LITpA", "n": "Soft White Underbelly"}, {"id": "UCqKUDCtElShTKsbSqZp-2mg", "n": "De Marker"}, {"id": "UCwnKziETDbHJtx78nIkfYug", "n": "CaspianReport"}, {"id": "UCIsz3XD8_E1ebhE4YScWeJg", "n": "Dean Schneider"}, {"id": "UCNMMma6CNy33tWhELYTr0Pg", "n": "Quote"}, {"id": "UCJQY1CkwtFNfJfIzROc8KiA", "n": "Conor Kenny"}, {"id": "UCLxt_rIwb0M1dsvJbBYtylQ", "n": "TEKNIQ"}, {"id": "UCb_MAhL8Thb3HJ_wPkH3gcw", "n": "Phil Edwards"}, {"id": "UCvSpVThzt4riOtmyWjtMGug", "n": "Bishu"}, {"id": "UC8bTQzxgvKkXDAaWkeuUlkg", "n": "Trevor Noah"}, {"id": "UCiaba-DmYJacphj7r7Knrwg", "n": "Obama Foundation"}, {"id": "UC6nSFpj9HTCZ5t-N3Rm3-HA", "n": "Vsauce"}, {"id": "UC4PIiYewI1YGyiZvgNlJNrA", "n": "Charles Cornell"}, {"id": "UC60a4msAOcjOWMMvNRyBx2w", "n": "Mitch Ray"}, {"id": "UCRRr_xrOm66qaigIbwFLvbQ", "n": "Simon Clark"}, {"id": "UCCzK4LJkDl73MQMbr8Lrcww", "n": "joeybtoonz"}, {"id": "UC3tdeGrp7CmSy__Mc_ttvYw", "n": "Found Footage Fest"}, {"id": "UCpVm7bg6pXKo1Pr6k5kxG9A", "n": "National Geographic"}, {"id": "UCEuiOszNd6msGgqsD0f9YAQ", "n": "Interesting Engineering"}, {"id": "UCVM1uxDwYNhIu3qQ0ejZtzQ", "n": "Sammy Obeid"}, {"id": "UCT4kJCZyg26egbPAuJVj2kA", "n": "Dr Myriam François"}, {"id": "UCvQECJukTDE2i6aCoMnS-Vg", "n": "Big Think"}, {"id": "UC59ZRYCHev_IqjUhremZ8Tg", "n": "Harry Mack"}, {"id": "UCC9sc7BFR9og4VgsvHFb0mQ", "n": "The Spicy Nonna"}, {"id": "UCS7kHEzoKbWgUEG3g1-vAeg", "n": "Improve Your Voice"}, {"id": "UC1yNl2E66ZzKApQdRuTQ4tw", "n": "Sabine Hossenfelder"}, {"id": "UCWE8OtagrL0B5zKetDF25lw", "n": "Aldo Brinkhoff"}, {"id": "UCAUuoWecF7xqPU8doJPFTKA", "n": "Genki"}, {"id": "UCcGXEidw0qjNdq7Gii8gHgg", "n": "Project Kamp"}, {"id": "UCyp-EzJrdTOd9uNPvmdst-w", "n": "Short of the Week"}, {"id": "UCqykZoZjaOPb6i_Y5gk0kLQ", "n": "Christophe"}, {"id": "UCVwDn0i4S4eQqg1MCeGLblw", "n": "Swipe Unbox"}, {"id": "UCdG5p24FH9cmpjQZeFsLpBg", "n": "Good News"}, {"id": "UC1vH350x7r9pSDLBskBiDXQ", "n": "Vanaf2"}, {"id": "UCPqurrZ9awdpDtS0YLWK3hA", "n": "Praxis Adventures in Living"}, {"id": "UClz-d22g9Lj7agZSbaRKuqA", "n": "Unreported World"}, {"id": "UCDsElQQt_gCZ9LgnW-7v-cQ", "n": "Kirsten Dirksen"}, {"id": "UCU_W0oE_ock8bWKjALiGs8Q", "n": "Charisma on Command"}, {"id": "UC8EQAfueDGNeqb1ALm0LjHA", "n": "Exploring Alternatives"}, {"id": "UCeeAAit-uAro5h79UD9qaQA", "n": "Kasper C. Jansen"}, {"id": "UC7DdEm33SyaTDtWYGO2CwdA", "n": "Physics Girl"}, {"id": "UClkUhTjFbQbtGfS14h9Vw5g", "n": "Martijn Doolaard"}, {"id": "UCt7oj318jVQi7vRbc1bNjJA", "n": "HONEST GUIDE"}, {"id": "UCO5QSoES5yn2Dw7YixDYT5Q", "n": "Aperture"}, {"id": "UCvK4bOhULCpmLabd2pDMtnA", "n": "Yes Theory"}, {"id": "UCIix6MklfJFywa_36iDj8Sw", "n": "Country Life Vlog"}, {"id": "UC6mIxFTvXkWQVEHPsEdflzQ", "n": "GreatScott!"}, {"id": "UCc-N24Y5OA0gqbjBwe1ttfA", "n": "Weird History"}, {"id": "UC9fSBF61eAEI2JOcFrM2Mng", "n": "Mr and Mrs Adventure"}, {"id": "UC7IcJI8PUf5Z3zKxnZvTBog", "n": "The School of Life"}, {"id": "UCj8PTSOOD_UOQ14r4H6n0QQ", "n": "Little Spanish Farmstead"}, {"id": "UC_DmOS_FBvO4H27U7X0OtRg", "n": "Fearless & Far"}, {"id": "UCi9dbPLZKq-7z_aiwnEWDiQ", "n": "zople"}, {"id": "UCP8HNHLFff9xAtKHS0a0qGQ", "n": "Make Thing With Hand"}, {"id": "UCWrF0oN6unbXrWsTN7RctTw", "n": "Sequoia Capital"}, {"id": "UCSkZVT6Vupj7e9iIvROHV4Q", "n": "Nicole Paris"}, {"id": "UCzsTj4b5yrLbl8mlM_ipHBw", "n": "Ahamed Fofana"}, {"id": "UCp2yzSLQ5JrzxYfIppB6bGQ", "n": "TrendyPOP: 90s & 00s Pop, Taken Seriously"}, {"id": "UCu3sxQLWdG8DLNdtPKn5Yjg", "n": "Secrets Beneath Nature with Dan"}, {"id": "UC5NnFWTPcBeW5Zs16334LZA", "n": "Wellness Place International"}, {"id": "UCLQo_9hbHu7ZgCdGWG2QMiw", "n": "India Zahra Lyell"}, {"id": "UClOXnNzA9RI2dWd-bhIrwKg", "n": "Rijk Hofman"}, {"id": "UCgZtHYn1EfHAplwo-5z7A8w", "n": "WingTsun Schule Feldkirch"}, {"id": "UCItin8KxrBzH0W8mltB1HqA", "n": "Fake Music Lab"}, {"id": "UCw8neN02mV6o4ue9IJOJIRA", "n": "Happen Films"}, {"id": "UCXP3ZzMABOidFuGSvsoGnFQ", "n": "Jake Davis"}, {"id": "UCfWlsGdIfYPZnECemLwYb8g", "n": "Dave in Portugal"}, {"id": "UCCWxQb90xB9I213KDe75xgw", "n": "Woodland Survival"}, {"id": "UCJm8Q-9K_8n-UBrgwEo4yLA", "n": "ARIatHOME"}, {"id": "UCV_w9-UYod7bPbazMW7Zp4A", "n": "Scambaiter"}, {"id": "UCLHX_eEa8XILo7zIr1cNkvw", "n": "Ponke"}, {"id": "UCT5UZHAhfbsy79CjO0-HjVA", "n": "Royal Baarn"}, {"id": "UC0QV_tRGAaevfQx6KGwJ9NA", "n": "Arvabelle"}, {"id": "UCpBm7mATacoeNMtlkiWE_ig", "n": "Eddie Moon"}, {"id": "UCT0dmfFCLWuVKPWZ6wcdKyg", "n": "James Jani"}, {"id": "UCHPIPQTnEMeB9vW9uDc1yGA", "n": "starpowerdrummer"}, {"id": "UCDoJIpPvtEwFvfNXsZvCqKw", "n": "Xander Budnick"}, {"id": "UCSNgS5ZY7JudYXoK6N3dqFA", "n": "Man Made"}, {"id": "UCFGVR9NwGc5cc79j48MfNdA", "n": "THE TALK"}, {"id": "UCstyRltPc51-_jTwYeKbCuw", "n": "Slick Oyster"}, {"id": "UClYDoTmBdnafBCHhnUCqvtw", "n": "Epic Spaceman"}, {"id": "UC0yrO8C0jhNAmdFQ1KYdE1g", "n": "The Posterity Project"}, {"id": "UCRmQfJiYZQ0ll8DYtiv8gbg", "n": "Taphani Sounds"}, {"id": "UCduewQAed4xpFNapDaD5PSw", "n": "Daisy Ray"}, {"id": "UCKyz2QCQanrzzB5SL3G5qcA", "n": "WANDERZIRKUS"}, {"id": "UCTommZDimXSU1SiGzr4PsMg", "n": "All That Is She"}, {"id": "UCu5RwK-TJDLhRcijbhtCJ5Q", "n": "LDN Research Trust - Low Dose Naltrexone"}, {"id": "UCdQbBc1tQqzzqgZfiaTpWZA", "n": "Chris Unlocks AI"}, {"id": "UCKirXBZV7hE4Fws3VSdYkRQ", "n": "Robin Greenfield"}, {"id": "UCTSnjQKDEUB-0gGymOCbjzQ", "n": "Cindy Vine Adventures"}, {"id": "UCD0NfpJGeT8XaPeaCmXU2Ig", "n": "Our Portuguese Homestead"}, {"id": "UC3FHvW16m_i117IqPnb0nmA", "n": "Simple Living Alaska"}, {"id": "UCAG6t1lcCLw6ShcOMgIk_WA", "n": "Sergio Reis"}, {"id": "UC4jXwFbX8_Z_ErBR_y1rd-Q", "n": "FAST Screenplay"}, {"id": "UCEOXxzW2vU0P-0THehuIIeg", "n": "Captain Disillusion"}, {"id": "UC7lGyJ1uPNcvTVeAHlsFY2w", "n": "Mefiz-Tofel World Music Television"}, {"id": "UCynijyjqY-u6z8_sGKgCErg", "n": "Beedle The Bardcore"}, {"id": "UCt7bdiSQtpVFhTeQuq12vkA", "n": "The Wildlands Garden"}, {"id": "UCcbWD5wIvyY-8Hf1yUaKw1g", "n": "Ronald Goedemondt"}, {"id": "UC5lw4G4puMbeFxZX9_eJGYw", "n": "Donjojohannes - Birett Ballett - Kathmedia"}, {"id": "UChqxlr587JCD5I9veE62s1w", "n": "VergePermaculture"}, {"id": "UCHo5p9uxv6VrT3hlZwMGSww", "n": "The Indigo Escape"}, {"id": "UCJZTjBlrnDHYmf0F-eYXA3Q", "n": "Self Sufficient Me"}, {"id": "UCsTPx-Q41Lf1SRjXelfcyXQ", "n": "Willows Green Permaculture"}, {"id": "UCcpWQjpQJ465FYJEx2DuDFA", "n": "suburban homestead"}, {"id": "UCo698VL13Dip93yh0f4Rc5Q", "n": "Bushradical"}, {"id": "UCgb_TbreMgfDdLKkr4yYJHw", "n": "Andrew Millison"}, {"id": "UCc0Ve6Kbkx7qC6EGz2gjqZg", "n": "R.A.S"}, {"id": "UCzhGxNcKKW0zygJ1_t5DZgA", "n": "Maya Feliz"}, {"id": "UCV8i0RAQ3kAxs8xWmB-lK-Q", "n": "The Forest Gardener"}, {"id": "UC1CPSebdAAH1gctKtrZqbag", "n": "Amato Lusitano Associação de Desenvolvimento"}, {"id": "UC5rT7F0PGNuD54rJ9kzgWzw", "n": "Kris Harbour Natural Building"}, {"id": "UCoIkJN5pRX9zoKzO0LojP4Q", "n": "MAKE. DO. GROW."}, {"id": "UC9GgpUN1ddSwiRTX-W6e2Aw", "n": "Freedom Ville TV"}, {"id": "UCwbqOKXhYrZEyMcLh4oVEIg", "n": "Dave Gorman"}, {"id": "UClC8QLFiyEiLMfQ2GVbniCw", "n": "Luke and Sarah's Off-Grid Life"}, {"id": "UCHI9Ioi5Ot_WlC3YFBiOlyw", "n": "Life by Living"}, {"id": "UCJYJgj7rzsn0vdR7fkgjuIA", "n": "styropyro"}, {"id": "UCEgYhf84VjXDz-W7a9-rdCQ", "n": "Two Bit da Vinci"}, {"id": "UCVo63lbKHjC04KqYhwSZ_Pg", "n": "Defunctland"}, {"id": "UCviORSZZlPN1bXTZG_ZYOyg", "n": "Josep Castanyer Alonso"}, {"id": "UCl4R4M9YVfYjjPmILU2Ie1A", "n": "1420 by Daniil Orain"}, {"id": "UCDLxnaDQzo8YolFqsBAHVLQ", "n": "The Honest Carpenter"}, {"id": "UCEUPx_RbHwadQ6AwDBiiAFg", "n": "There I Ruined It"}, {"id": "UCaPaDEFusMaogm0Vn0LbzoA", "n": "Nobody & The Computer"}, {"id": "UCUzEzP63xBxsmsh8UPryKOQ", "n": "We Made A Thing Studios"}, {"id": "UC6cf5WQhbbh2krKho7WqQ9A", "n": "Stemmen van Toen"}, {"id": "UCdlNqAud-eDf7EKcVrm7MXw", "n": "Talk Poeder"}, {"id": "UCvj3hNvwrEgTRkeut7_cBAQ", "n": "JiDion"}, {"id": "UCI68G6Vj0fQGOTEZmpjNGzQ", "n": "Autodesk Flow Studio"}, {"id": "UCycGV6fAhD_-7GPmCkkESdw", "n": "Till Musshoff"}, {"id": "UC7PB68IsFxdham90io_syxw", "n": "TRINIX"}, {"id": "UCcU5PxKfWqAQcaFIecpwiHA", "n": "Shape Shifter"}, {"id": "UCD5_QIM67BZJdh9AwZv3soA", "n": "Nate The Lawyer"}, {"id": "UC-kM5kL9CgjN9s9pim089gg", "n": "Adam Conover"}, {"id": "UCRNk_aak9qGiYqzNSKRUWwg", "n": "Coyote Peterson"}, {"id": "UC9Lp_AA5M2cMGrlvnnIns-g", "n": "Bizarre Beasts"}, {"id": "UCxHTM1FYxeC4F7xDsBVltGg", "n": "Wim Hof"}, {"id": "UCyFqU2B_os2EX9_aPiVgABw", "n": "Vinay Yoga Mysore"}, {"id": "UCxcFfVdSpNU0qmne-yZj29w", "n": "Andrew Eppler"}, {"id": "UCObIuA3fISxZ0Ptnr-IEOHA", "n": "Raphael Treza"}, {"id": "UCeQ71o-3wQzaGz24Qu_m5IA", "n": "Yogasana with Preet"}, {"id": "UCJa7GbC8d8gHxpK6n35yNLQ", "n": "Avontura Silent Disco Theater"}, {"id": "UC4gbCGiEov1VAcOFpfGKPiA", "n": "Built IRL"}, {"id": "UC22ouaS7eOb8fDElD-ZKEqA", "n": "Indie Nile"}, {"id": "UCvCYE-3TrY1GAe2l8K08N-w", "n": "Digital Engine"}, {"id": "UCB4NFn-8oipHct0IfAQBQrQ", "n": "Unnecessary Inventions"}, {"id": "UCPe7XrmOPtz4OjL6KGtvJMA", "n": "Nicholas Rehm"}, {"id": "UCE15AMB_5cRRNjKUil9fGCg", "n": "Into Europe"}, {"id": "UCqmugCqELzhIMNYnsjScXXw", "n": "Vsauce2"}, {"id": "UCeiYXex_fwgYDonaTcSIk6w", "n": "MinuteEarth"}, {"id": "UC2C_jShtL725hvbm1arSV9w", "n": "CGP Grey"}, {"id": "UC_cznB5YZZmvAmeq7Y3EriQ", "n": "Stated Clearly"}, {"id": "UCkz7aKpjUB_DBd5CxayGcvg", "n": "Future Lab"}, {"id": "UCdgUN8rX3SEb9L7FDub3I6A", "n": "Design Theory"}, {"id": "UCybBViio_TH_uiFFDJuz5tg", "n": "Einzelgänger"}, {"id": "UCdcUmdOxMrhRjKMw-BX19AA", "n": "Niko Omilana"}, {"id": "UCbyE5OvaP4GJhKvPCXxjWvw", "n": "Fire of Learning"}, {"id": "UCVS89U86PwqzNkK2qYNbk5A", "n": "Allen Pan"}, {"id": "UCMTk_R_Y49jvq-HQXDmKI0Q", "n": "The Right Opinion"}, {"id": "UC-OJ-24roEfQ_-PCnLJSckg", "n": "Levi Hildebrand"}, {"id": "UCPCw5ycqW0fme1BdvNqOxbw", "n": "ProjectAir"}, {"id": "UC8TZwtZ17WKFJSmwTZQpBTA", "n": "MAJ"}, {"id": "UCWYRT-NhEqkZ_afrqEgxYOQ", "n": "JimmyTheGiant"}, {"id": "UCbCq5Y0WPGimG2jNXhoQxGw", "n": "Atomic Frontier"}, {"id": "UC3_AWXcf2K3l9ILVuQe-XwQ", "n": "Matthias random stuff"}, {"id": "UCfMJ2MchTSW2kWaT0kK94Yw", "n": "William Osman"}, {"id": "UCEn3fRj2e0mpqYsijxnzayg", "n": "Xyla Foxlin"}, {"id": "UConJDkGk921yT9hISzFqpzw", "n": "Freethink"}, {"id": "UCagHkTCCSbohFMJln7JYqMQ", "n": "Ally Law"}, {"id": "UC_jBXeWtwdqV14jldwAgsWg", "n": "Lloyiso"}, {"id": "UCVc6AHfGw9b2zOE_ZGfmsnw", "n": "Make Anything"}, {"id": "UCxEyesAXNzQySjb8nENZhGQ", "n": "Het officiële LuckyTV-kanaal"}, {"id": "UCtZE8Xa4ArAxQmHxRVtNnVg", "n": "Bandsplaining"}, {"id": "UCWuDj2yt7eShqIwzJuBOP6w", "n": "Maxim doet Vegan"}, {"id": "UClqtgKBywNwxvnOND_RjghA", "n": "Joardy Film"}, {"id": "UCaKZDEMDdQc8t6GzFj1_TDw", "n": "Be Inspired"}, {"id": "UCn42KBfqvZ6Ffg-x-VKzaMA", "n": "Whacked-out Entertainment"}, {"id": "UCj1VqrHhDte54oLgPG4xpuQ", "n": "Stuff Made Here"}, {"id": "UCsxaD-SwkbEY_D7kcWIeaYg", "n": "Sophie Straat"}, {"id": "UCheL-cUqfzUB8dfM_rFOfDQ", "n": "Jackson Galaxy"}, {"id": "UCAeYi503MlrgQS90dIygwvw", "n": "Monsieur Pompier's Travelling Freakshow"}, {"id": "UCtqxG9IrHFU_ID1khGvx9sA", "n": "All Gas No Brakes"}, {"id": "UChxVHjWESG4ZKQxTW0ed25A", "n": "attic ted"}, {"id": "UCUBdiAE5sIA9kNYyjU5xUqg", "n": "I3I2I6"}, {"id": "UCmCkcCtmrBu5CfFi8LFFcVA", "n": "Turnah81"}, {"id": "UCBjh-uGy5RcclATnFpQBobw", "n": "A Chick Called Albert"}, {"id": "UCzakF5bv8dffsqY5JBhOHnA", "n": "Team Candiru"}, {"id": "UCQG4cX86zZ51IU2cerZgPSA", "n": "Awkward Puppets"}, {"id": "UCdH_8mNJ9vzpHwMNwlz88Zw", "n": "De Avondshow met Arjen Lubach"}, {"id": "UCS4SEuQjccWgx-R7sgz6fxA", "n": "frederic klein"}, {"id": "UCpExuV8qJMfCaSQNL1YG6bQ", "n": "Better Than Yesterday"}, {"id": "UCJ-vHE5CrGaL_ITEg-n3OeA", "n": "TheraminTrees"}, {"id": "UCYwVxWpjeKFWwu8TML-Te9A", "n": "JCS - Criminal Psychology"}, {"id": "UCRvWwMPr2SmSG7rXXzeEUdA", "n": "SideNote"}, {"id": "UCBNG0osIBAprVcZZ3ic84vw", "n": "Jim Browning"}, {"id": "UCNvsIonJdJ5E4EXMa65VYpA", "n": "ContraPoints"}, {"id": "UCR_5-Jx4QuEr1ON-GiDLmLA", "n": "ermanø"}, {"id": "UCwwVQFDR6cVQE1cybJHrvoQ", "n": "ScottiesTech.Info"}, {"id": "UC9aRTgvFLqnK1S0RsWZzlMw", "n": "Modustrial Maker"}, {"id": "UCOKHwx1VCdgnxwbjyb9Iu1g", "n": "Blender Guru"}, {"id": "UCp68_FLety0O-n9QU6phsgw", "n": "colinfurze"}, {"id": "UCCqqx39MDmw02bj7awjJeEQ", "n": "Because We Carry"}, {"id": "UC7c8mE90qCtu11z47U0KErg", "n": "nature video"}, {"id": "UCesPIV0EchUfPPps3qhLowQ", "n": "Iris van Herpen"}, {"id": "UC4E98HDsPXrf5kTKIgrSmtQ", "n": "Special Books by Special Kids"}, {"id": "UCmh5gdwCx6lN7gEC20leNVA", "n": "David Dobrik"}, {"id": "UCoanlfeXEit_vI83VlE709A", "n": "Facts in Motion"}, {"id": "UCMtFAi84ehTSYSE9XoHefig", "n": "The Late Show with Stephen Colbert"}, {"id": "UCYXGHivsMPVU-h-M_wd9m3Q", "n": "The Ocean Cleanup"}, {"id": "UC18vz5hUUqxbGvym9ghtX_w", "n": "Samantha Bee"}, {"id": "UC9Ntx-EF3LzKY1nQ5rTUP2g", "n": "cyriak"}, {"id": "UC9RM-iSvTu1uPJb8X5yp3EQ", "n": "Wendover Productions"}, {"id": "UCYThdLKE6TDwBJh-qDC6ICA", "n": "Extinction Rebellion (XR) UK"}, {"id": "UCjEK32QlJe0Dy4nXxelXrww", "n": "ELPHNT"}, {"id": "UCtZO3K2p8mqFwiKWb9k7fXA", "n": "TechAltar"}, {"id": "UCH4BNI0-FOK2dMXoFtViWHw", "n": "Be Smart"}, {"id": "UCGRB1ZjIqAiaGwt-XLq9CnA", "n": "Sciencium"}, {"id": "UC2LZO6swZ9SLUEOks3WnsfA", "n": "2veritasium"}, {"id": "UC9uD-W5zQHQuAVT2GdcLCvg", "n": "Insider Science"}, {"id": "UCxo8ooAqXiObjuaIy10ud0A", "n": "Beyond Science"}, {"id": "UC06E4Y_-ybJgBUMtXx8uNNw", "n": "TheBackyardScientist"}, {"id": "UCUHW94eEFW7hkUMVaZz4eDg", "n": "minutephysics"}, {"id": "UCC552Sd-3nyi_tk2BudLUzA", "n": "AsapSCIENCE"}, {"id": "UC5k3Kc0avyDJ2nG9Kxm9JmQ", "n": "Bright Sun Films"}, {"id": "UCR1IuLEqb6UEA_zQ81kwXfg", "n": "Real Engineering"}, {"id": "UCwpmgxMw9CoQdWPSp9a0odA", "n": "bob cali"}, {"id": "UCFMkPeE8jiPirJMv9kttuIg", "n": "CoolVision"}, {"id": "UCuCkxoKLYO_EQ2GeFtbM_bw", "n": "Half as Interesting"}, {"id": "UCtxJFU9DgUhfr2J2bveCHkQ", "n": "Verge Science"}, {"id": "UC6107grRI4m0o2-emgoDnAA", "n": "SmarterEveryDay"}, {"id": "UCX6b17PVsYBQ0ip5gyeme-Q", "n": "CrashCourse"}, {"id": "UCzWQYUVCpZqtN93H8RR44Qw", "n": "Seeker"}, {"id": "UCEZ0B5gaboF9T6hQIxMDP9g", "n": "Enige Ernstige"}, {"id": "UCJbonl3vnhqkWvZcMPTUfkQ", "n": "Patrick Boivin"}, {"id": "UCB6PV0cvJpzlcXRG7nz6PpQ", "n": "Motherboard"}, {"id": "UCHJuQZuzapBh-CuhRYxIZrg", "n": "Insider"}, {"id": "UC0k173Oca1nPZurW2ITHlYw", "n": "Wonder World"}, {"id": "UCqHazU9MlmVW366vMHYuoBg", "n": "iWonder"}, {"id": "UC4500tRZJ0yUDrxYiHl9qFg", "n": "Lemonistired"}, {"id": "UC_emfVcaMyvTvJdT7s7SItA", "n": "Bandanimals"}, {"id": "UCEs9FPCstSmi28T5Ej_aUSQ", "n": "Mind Blowing Videos"}, {"id": "UCvpjSSIodRfDo9sgwMXLaTw", "n": "The BIGGEST"}, {"id": "UCajXeitgFL-rb5-gXI-aG8Q", "n": "Great Big Story"}, {"id": "UCifITV8prumLFde7Ih75d-Q", "n": "laGarçon* music"}, {"id": "UCbayRQF9NJOEg2ids3XZlBw", "n": "Occipital HQ"}, {"id": "UCT2rZIAL-zNqeK1OmLLUa6g", "n": "Microsoft HoloLens"}, {"id": "UCb46FBx42bqkzp3WvpqoXOg", "n": "ZappBox"}, {"id": "UC2E1x3l45YUO2eOhRv-A7lw", "n": "Magic Leap"}, {"id": "UC4P_2mTy_s4kFs0y843eexQ", "n": "Eva Bartels"}, {"id": "UC_IeQnKpyzztWLjpluec2gQ", "n": "MAASK TV"}, {"id": "UCe3LBsSb6Zm6JgDuS9c6RPw", "n": "Jan Geurtz"}, {"id": "UCfKUydmjvGLmlXNeTk3Z9Ew", "n": "Former As"}, {"id": "UCMqS32CgwA6LjyzVZsmz7RQ", "n": "Anna Mikhailova"}, {"id": "UCRkR-k9L1KhO8mYh9GW_QiA", "n": "Rens Vossebeld"}, {"id": "UC108DLVGuGWZXj1r3HPdiMg", "n": "Glenn TV"}, {"id": "UCpA5JIzpHi11jFvsVRTx7Vw", "n": "PERFORMANCECOLLECTIEF URLAND"}, {"id": "UCmGUURypXdZGuDTWxrs50Og", "n": "Jordan Passmore"}, {"id": "UC_U3bA8yI-3VjSEZrQge8xw", "n": "Lecture By Girls"}, {"id": "UChuxohkVNWU5yE3b7C-7qxw", "n": "Gliederpuppe"}, {"id": "UCuYNaSeAMMVnYrnjvpUG7jQ", "n": "schatteke"}, {"id": "UCj1lgD9Xs3HBN-KxRnuZ4YQ", "n": "Chili Klaus"}, {"id": "UCOnr4wqPEbVFbXGhVXG8Akw", "n": "Quotenet"}, {"id": "UCCK5qp0TG2SKEI0dOQPcCpA", "n": "GentooP"}, {"id": "UCS4BXLZeVcRl0ef02fFlaXw", "n": "Project studio handbook"}, {"id": "UC4KbVqeKXrQNnQDrRK7sbNQ", "n": "SB-SIX"}, {"id": "UC_GIMlOUYbn0WbJwgDyJ-bA", "n": "TunaDJGear"}, {"id": "UC3iNS67-ey712-zrC6D1tzw", "n": "agkwtechno"}, {"id": "UCYEK6xds6eo-3tr4xRdflmQ", "n": "deadmau5"}, {"id": "UC7QXkiLkHMb3eP1PLP9Ik5Q", "n": "Jetti Steffers"}, {"id": "UCpPnsOUPkWcukhWUVcTJvnA", "n": "Dave Dugdale"}, {"id": "UCiFl77I82eEegfHm3ARrakQ", "n": "MC"}, {"id": "UCI-1_LsPRjN8q7zmkiPzi9Q", "n": "pmugarura"}, {"id": "UCwqaFL2ZXCneiIHwlfiNgAw", "n": "Michiel van den Broeke"}, {"id": "UCwYhXSpFwIA68KiMvlvcMew", "n": "Michael vK"}, {"id": "UCg-gW2myNEF6LmvzoLI5wSg", "n": "FTHLaboratories"}, {"id": "UCY9gOpnb8_h0VSI6vjSLucg", "n": "Dubspot"}, {"id": "UCQ4qFyN4YHX_alL3MrL0UVQ", "n": "Warp Academy"}, {"id": "UCb3-RQrlheWvQRPLBYJiQTA", "n": "Kinderen Tegen Kinderen"}, {"id": "UCjxnA-sZPOVAQ_u71wllMOg", "n": "Van Van Zundert"}, {"id": "UCn8zNIfYAQNdrFRrr8oibKw", "n": "VICE"}, {"id": "UCYm8B9os_tEcqyobP_3qiRQ", "n": "Ro Theater"}, {"id": "UCiSNov97L4LOlRBerS6_cVw", "n": "Enviu"}, {"id": "UCJUZR7jB72BeUQZZY5TqpRA", "n": "De Bubbelebim"}, {"id": "UCJ11c9c13AuoDVw0UEr_tWA", "n": "Debbie Kleijn"}, {"id": "UC3Z0zsT6mLyIoQgGJKYNsIA", "n": "360istanbul"}, {"id": "UCaJI_ix37ZgdiHkfE3GFKcA", "n": "DAANDRAAIT2"}, {"id": "UCAgra1yIwxiV-a5dSqMeR8Q", "n": "Eddie B. Wahr"}];
+const DEFAULT_TOPICS = `homemade invention build|makers
+weird engineering project build|makers
+diy robot project|makers
+backyard science experiment|wetenschap
+science explained animation|wetenschap
+off grid homestead portugal|offgrid
+permaculture food forest|offgrid
+tiny house natural building|offgrid
+funny music remix animals|muziek
+synthesizer music making experiment|muziek
+street performance art|theater
+puppet theatre|theater
+immersive theatre performance|theater
+ai tools creative experiment|ai
+animal rescue story|feelgood
+indie game devlog|games`;
+
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem('mt_'+k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('mt_'+k, JSON.stringify(v)); }catch(e){} }
+};
+const S = {
+  key: LS.get('key',''),
+  topics: LS.get('topics', DEFAULT_TOPICS),
+  maxSubs: LS.get('maxSubs', 20000),
+  hideShorts: LS.get('hideShorts', true),
+  days: LS.get('days', 14),
+  weights: LS.get('weights', {}),
+  chanScore: LS.get('chanScore', {}),
+  blocked: LS.get('blocked', {}),
+  muted: LS.get('muted', {}),
+  extra: LS.get('extra', []),
+  seen: LS.get('seen', {}),
+  votes: LS.get('votes', {}),
+  feed: LS.get('feed', null),
+  disc: LS.get('disc', null),
+  quota: LS.get('quota', {day:'', used:0}),
+};
+function save(...keys){ keys.forEach(k => LS.set(k, S[k])); }
+let tab = 'feed', filterQ = '', filterNew = false;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+
+function topicsList(){
+  return S.topics.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [q, cat] = l.split('|'); return {q:q.trim(), cat:(cat||'overig').trim()}; });
+}
+function allSubs(){ return SUBS.concat(S.extra).filter(s => !S.muted[s.id]); }
+function subIds(){ return new Set(SUBS.concat(S.extra).map(s => s.id)); }
+
+function addQuota(n){
+  if (S.quota.day !== today()) S.quota = {day: today(), used: 0};
+  S.quota.used += n; save('quota');
+}
+async function api(path, params, cost=1){
+  if (!S.key) throw new Error('nokey');
+  const qs = new URLSearchParams({...params, key: S.key});
+  addQuota(cost);
+  const r = await fetch('https://www.googleapis.com/youtube/v3/' + path + '?' + qs);
+  const j = await r.json();
+  if (j.error) { const e = new Error(j.error.message); e.code = j.error.code; e.reason = j.error.errors?.[0]?.reason; throw e; }
+  return j;
+}
+function setStatus(t){ $('#status').textContent = t; }
+function prog(p){ $('#prog').style.width = (p*100) + '%'; if (p >= 1) setTimeout(() => $('#prog').style.width = '0', 400); }
+
+function parseDur(iso){
+  const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso || '') || [];
+  return (+m[1]||0)*86400 + (+m[2]||0)*3600 + (+m[3]||0)*60 + (+m[4]||0);
+}
+function fmtDur(s){
+  if (!s) return '';
+  const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return (h ? h+':'+String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0');
+}
+function ago(d){
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (s < 3600) return Math.max(1, Math.round(s/60)) + ' min geleden';
+  if (s < 86400) return Math.round(s/3600) + ' u geleden';
+  const days = Math.round(s/86400);
+  return days === 1 ? 'gisteren' : days + ' dagen geleden';
+}
+function fmtSubs(n){ n = +n; return n >= 1000 ? (n/1000).toFixed(n < 10000 ? 1 : 0).replace('.', ',') + 'K' : String(n); }
+
+async function details(ids){
+  const out = {};
+  for (let i = 0; i < ids.length; i += 50) {
+    const j = await api('videos', {part:'contentDetails,statistics', id: ids.slice(i,i+50).join(',')});
+    j.items.forEach(v => out[v.id] = {dur: parseDur(v.contentDetails.duration), views: +(v.statistics?.viewCount||0)});
+  }
+  return out;
+}
+
+async function loadFeed(){
+  const subs = allSubs();
+  const since = Date.now() - S.days*86400000;
+  const vids = []; let done = 0, errors = 0;
+  setStatus('Kanalen laden…');
+  const queue = subs.slice();
+  async function worker(){
+    while (queue.length) {
+      const s = queue.shift();
+      try {
+        const j = await api('playlistItems', {part:'snippet,contentDetails', playlistId: 'UU' + s.id.slice(2), maxResults: 6});
+        j.items.forEach(it => {
+          const d = it.contentDetails.videoPublishedAt || it.snippet.publishedAt;
+          if (new Date(d) > since && it.snippet.title !== 'Private video')
+            vids.push({id: it.contentDetails.videoId, title: it.snippet.title, ch: s.id, chName: s.n, date: d, thumb: it.snippet.thumbnails?.medium?.url});
+        });
+      } catch(e) { errors++; if (e.reason === 'quotaExceeded' || e.message === 'nokey' || e.code === 400) { queue.length = 0; throw e; } }
+      done++; prog(done/subs.length); setStatus('Kanalen laden… ' + done + '/' + subs.length);
+    }
+  }
+  await Promise.all(Array.from({length: 8}, worker));
+  const det = await details(vids.map(v => v.id));
+  vids.forEach(v => Object.assign(v, det[v.id] || {}));
+  vids.sort((a,b) => new Date(b.date) - new Date(a.date));
+  S.feed = {at: Date.now(), vids}; save('feed');
+}
+
+function pickTopics(n){
+  const pool = topicsList().map(t => ({...t, w: Math.max(0.2, 1 + (S.weights[t.q]||0))}));
+  const out = [];
+  while (out.length < n && pool.length) {
+    const sum = pool.reduce((a,t) => a + t.w, 0);
+    let r = Math.random() * sum, i = 0;
+    while (r > pool[i].w) { r -= pool[i].w; i++; }
+    out.push(pool.splice(i,1)[0]);
+  }
+  return out;
+}
+
+async function loadDisc(){
+  const topics = pickTopics(5);
+  const have = subIds();
+  const after = new Date(Date.now() - 60*86400000).toISOString();
+  let cands = [];
+  for (let i = 0; i < topics.length; i++) {
+    const t = topics[i];
+    setStatus('Ontdekken: ' + t.q);
+    prog((i+0.5)/(topics.length+1));
+    const j = await api('search', {part:'snippet', type:'video', q: t.q, maxResults: 40, publishedAfter: after, videoDuration:'medium', safeSearch:'moderate'}, 100);
+    j.items.forEach(it => {
+      if (have.has(it.snippet.channelId) || S.blocked[it.snippet.channelId]) return;
+      cands.push({id: it.id.videoId, title: it.snippet.title.replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"'), ch: it.snippet.channelId, chName: it.snippet.channelTitle, date: it.snippet.publishedAt, thumb: it.snippet.thumbnails?.medium?.url, topic: t.q, cat: t.cat});
+    });
+  }
+  const chs = [...new Set(cands.map(c => c.ch))];
+  const subsOf = {};
+  for (let i = 0; i < chs.length; i += 50) {
+    const j = await api('channels', {part:'statistics', id: chs.slice(i,i+50).join(',')});
+    j.items.forEach(c => subsOf[c.id] = c.statistics.hiddenSubscriberCount ? null : +c.statistics.subscriberCount);
+  }
+  cands = cands.filter(c => subsOf[c.ch] != null && subsOf[c.ch] <= S.maxSubs && subsOf[c.ch] >= 30);
+  const perCh = {};
+  cands = cands.filter(c => (perCh[c.ch] = (perCh[c.ch]||0) + 1) <= 2);
+  const det = await details(cands.map(c => c.id));
+  cands.forEach(c => { Object.assign(c, det[c.id] || {}); c.subs = subsOf[c.ch]; });
+  cands.forEach(c => {
+    const tw = 1 + (S.weights[c.topic]||0) * 0.3;
+    const cw = 1 + (S.chanScore[c.ch]||0) * 0.5;
+    const small = 1 + 0.4 * (1 - Math.min(1, c.subs / S.maxSubs));
+    const engage = c.subs ? Math.min(2, Math.log10(1 + (c.views||0)) / Math.log10(10 + c.subs)) : 1;
+    c.score = tw * cw * small * (0.6 + 0.4*engage) * (0.85 + Math.random()*0.3);
+  });
+  cands.sort((a,b) => b.score - a.score);
+  S.disc = {at: Date.now(), day: today(), vids: cands, topics: topics.map(t => t.q)}; save('disc');
+  prog(1);
+}
+
+function card(v, opts={}){
+  const seen = S.seen[v.id] ? ' seen' : '';
+  const vote = S.votes[v.id] || 0;
+  return `<div class="v${seen}" data-id="${v.id}">
+    <div class="th" data-play="${v.id}"><img loading="lazy" src="${esc(v.thumb)}" alt="">${v.dur ? `<span class="dur">${fmtDur(v.dur)}</span>` : ''}</div>
+    <button class="more" data-more="${v.id}" aria-label="Meer">⋯</button>
+    <div class="t" data-play="${v.id}">${esc(v.title)}</div>
+    <div class="m"><b>${esc(v.chName)}</b> · ${ago(v.date)}</div>
+    ${opts.disc ? `<span class="badge">${fmtSubs(v.subs)} abonnees</span>
+    <div class="acts">
+      <button class="up${vote>0?' on':''}" data-vote="1" data-v="${v.id}">▲ meer zoals dit</button>
+      <button data-vote="-1" data-v="${v.id}">▼ minder</button>
+      <button data-follow="${v.ch}" data-name="${esc(v.chName)}">+ volg</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function feedVids(){
+  let vids = S.feed?.vids || [];
+  const allowed = new Set(allSubs().map(s => s.id));
+  vids = vids.filter(v => allowed.has(v.ch));
+  if (S.hideShorts) vids = vids.filter(v => !v.dur || v.dur > 180);
+  if (filterNew) vids = vids.filter(v => !S.seen[v.id]);
+  if (filterQ) { const q = filterQ.toLowerCase(); vids = vids.filter(v => v.title.toLowerCase().includes(q) || v.chName.toLowerCase().includes(q)); }
+  return vids;
+}
+function discVids(){
+  return (S.disc?.vids || []).filter(v => !S.blocked[v.ch] && (S.votes[v.id]||0) >= 0 && !subIds().has(v.ch));
+}
+
+function render(){
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  const m = $('#main');
+  if (!S.key) {
+    m.innerHTML = `<div class="empty"><h2>Welkom</h2><p class="sub">Plak eerst je YouTube API-key in de instellingen.</p><button id="goSet">⚙ Instellingen openen</button></div>`;
+    $('#goSet').onclick = openSettings; return;
+  }
+  const disc = discVids();
+  if (tab === 'feed') {
+    const vids = feedVids();
+    m.innerHTML = `
+      ${disc.length ? `<h2>Vandaag ontdekt</h2><p class="sub">Kleine kanalen die je nog niet volgt</p>
+      <div class="strip">${disc.slice(0,6).map(v => card(v,{disc:true})).join('')}</div>` : ''}
+      <h2>Mijn kanalen</h2><p class="sub">${vids.length} video's van de afgelopen ${S.days} dagen${S.feed ? ' · bijgewerkt ' + ago(S.feed.at) : ''}</p>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Zoek in titel of kanaal" value="${esc(filterQ)}">
+        <button class="chip${filterNew?' on':''}" id="fNew">Nog niet gezien</button>
+      </div>
+      ${vids.length ? `<div class="grid">${vids.map(v => card(v)).join('')}</div>` : `<div class="empty">${S.feed ? 'Geen video\'s gevonden.' : 'Klik op ↻ Ververs om je kanalen te laden.'}</div>`}`;
+    const q = $('#q'); q.oninput = () => { filterQ = q.value; const p = q.selectionStart; render(); const n = $('#q'); n.focus(); n.setSelectionRange(p,p); };
+    $('#fNew').onclick = () => { filterNew = !filterNew; render(); };
+  } else {
+    m.innerHTML = `<h2>Ontdekken</h2><p class="sub">${S.disc ? 'Onderwerpen vandaag: ' + esc(S.disc.topics.join(', ')) + ' · max ' + fmtSubs(S.maxSubs) + ' abonnees' : ''}</p>
+      ${disc.length ? `<div class="grid">${disc.map(v => card(v,{disc:true})).join('')}</div>` : `<div class="empty">${S.disc ? 'Niks meer over. Klik ↻ Ververs voor nieuwe ontdekkingen.' : 'Klik op ↻ Ververs om te ontdekken.'}</div>`}`;
+  }
+  const qu = S.quota.day === today() ? S.quota.used : 0;
+  setStatus(qu ? 'API vandaag: ' + qu + ' / 10.000' : '');
+}
+
+function findVid(id){ return (S.feed?.vids||[]).concat(S.disc?.vids||[]).find(v => v.id === id); }
+
+function play(id){
+  S.seen[id] = Date.now(); save('seen');
+  const v = findVid(id) || {};
+  $('#layer').innerHTML = `<div class="modal" id="mod"><div class="player">
+    <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <div class="row"><div style="flex:1"><div style="font-weight:500">${esc(v.title)}</div><div class="m">${esc(v.chName)}</div></div>
+    <a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Open op YouTube ↗</a>
+    <button id="close">✕ Sluiten</button></div></div></div>`;
+  $('#close').onclick = closeLayer;
+  $('#mod').onclick = e => { if (e.target.id === 'mod') closeLayer(); };
+}
+function closeLayer(){ $('#layer').innerHTML = ''; render(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#layer').innerHTML) closeLayer(); });
+
+function vote(id, d){
+  const v = findVid(id); if (!v) return;
+  const prev = S.votes[id] || 0;
+  S.votes[id] = prev === d ? 0 : d;
+  const delta = S.votes[id] - prev;
+  if (v.topic) S.weights[v.topic] = Math.max(-0.8, Math.min(5, (S.weights[v.topic]||0) + delta*(delta > 0 ? 0.5 : 0.4)));
+  S.chanScore[v.ch] = (S.chanScore[v.ch]||0) + delta;
+  if (S.chanScore[v.ch] <= -2) S.blocked[v.ch] = 1;
+  save('votes','weights','chanScore','blocked'); render();
+}
+function follow(ch, name){
+  if (!S.extra.find(s => s.id === ch)) S.extra.push({id: ch, n: name});
+  save('extra');
+  const vids = (S.disc?.vids || []).filter(v => v.ch === ch);
+  if (S.feed) { S.feed.vids = vids.map(v => ({...v})).concat(S.feed.vids).sort((a,b) => new Date(b.date) - new Date(a.date)); save('feed'); }
+  setStatus(name + ' toegevoegd aan Mijn kanalen'); render();
+}
+
+function openMenu(id, btn){
+  closeMenus();
+  const v = findVid(id); if (!v) return;
+  const isSub = subIds().has(v.ch);
+  const div = document.createElement('div'); div.className = 'menu';
+  div.innerHTML = `<a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener" style="display:block;padding:7px 10px;font-size:13px;color:inherit;text-decoration:none">Open op YouTube ↗</a>
+    <button data-m="seen">${S.seen[id] ? 'Markeer als niet gezien' : 'Markeer als gezien'}</button>
+    ${isSub ? `<button data-m="mute">Verberg dit kanaal</button>` : `<button data-m="block">Nooit meer tonen</button>`}`;
+  btn.closest('.v').appendChild(div);
+  div.onclick = e => {
+    const a = e.target.dataset.m; if (!a) return;
+    if (a === 'seen') { if (S.seen[id]) delete S.seen[id]; else S.seen[id] = Date.now(); save('seen'); }
+    if (a === 'mute') { S.muted[v.ch] = 1; save('muted'); }
+    if (a === 'block') { S.blocked[v.ch] = 1; save('blocked'); }
+    render();
+  };
+}
+function closeMenus(){ document.querySelectorAll('.menu').forEach(m => m.remove()); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-play],[data-vote],[data-follow],[data-more],[data-tab]');
+  if (!t) { if (!e.target.closest('.menu')) closeMenus(); return; }
+  if (t.dataset.tab) { tab = t.dataset.tab; render(); window.scrollTo(0,0); }
+  else if (t.dataset.play) play(t.dataset.play);
+  else if (t.dataset.vote) vote(t.dataset.v, +t.dataset.vote);
+  else if (t.dataset.follow) follow(t.dataset.follow, t.dataset.name);
+  else if (t.dataset.more) { e.stopPropagation(); openMenu(t.dataset.more, t); }
+});
+
+function openSettings(){
+  const mutedNames = SUBS.concat(S.extra).filter(s => S.muted[s.id]).map(s => s.n);
+  $('#layer').innerHTML = `<div class="modal" id="mod"><div class="panel">
+    <h2>Instellingen</h2>
+    <label>YouTube API-key</label>
+    <input type="text" id="sKey" class="key" value="${esc(S.key)}" placeholder="AIza…">
+    <div class="hint">Wordt alleen in deze browser bewaard.</div>
+    <label>Ontdek-onderwerpen (één per regel, optioneel |categorie)</label>
+    <textarea id="sTopics">${esc(S.topics)}</textarea>
+    <div class="hint">Elke verversing kiest er 5. Onderwerpen waar je ▲ op geeft komen vaker terug.</div>
+    <label>Maximaal aantal abonnees voor ontdekte kanalen</label>
+    <input type="number" id="sMax" value="${S.maxSubs}" min="100" step="1000">
+    <label>Hoeveel dagen terug in Mijn kanalen</label>
+    <input type="number" id="sDays" value="${S.days}" min="1" max="60">
+    <label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" id="sShorts" ${S.hideShorts?'checked':''}> Shorts en filmpjes korter dan 3 minuten verbergen</label>
+    ${mutedNames && mutedNames.length ? `<label>Verborgen kanalen</label><div class="hint">${esc(mutedNames.join(', '))}</div><button id="unmute" style="margin-top:6px">Alle verborgen kanalen terugzetten</button>` : ''}
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button id="cancel">Annuleren</button><button id="saveSet" style="background:var(--accent);border-color:var(--accent);color:#fff">Opslaan</button>
+    </div></div></div>`;
+  $('#cancel').onclick = closeLayer;
+  if ($('#unmute')) $('#unmute').onclick = () => { S.muted = {}; save('muted'); openSettings(); };
+  $('#saveSet').onclick = () => {
+    const hadKey = !!S.key;
+    S.key = $('#sKey').value.trim(); S.topics = $('#sTopics').value; S.maxSubs = +$('#sMax').value || 20000;
+    S.days = +$('#sDays').value || 14; S.hideShorts = $('#sShorts').checked;
+    save('key','topics','maxSubs','days','hideShorts'); closeLayer();
+    if (!hadKey && S.key) refresh();
+  };
+}
+$('#settingsBtn').onclick = openSettings;
+
+let busy = false;
+async function refresh(){
+  if (busy || !S.key) { if (!S.key) openSettings(); return; }
+  busy = true; $('#refresh').disabled = true;
+  try {
+    if (tab === 'feed') { await loadFeed(); if (!S.disc || S.disc.day !== today()) await loadDisc(); }
+    else await loadDisc();
+  } catch(e) {
+    setStatus(e.reason === 'quotaExceeded' ? 'Daglimiet van YouTube bereikt, morgen weer.' : 'Fout: ' + e.message);
+    busy = false; $('#refresh').disabled = false; render(); setStatus(e.reason === 'quotaExceeded' ? 'Daglimiet van YouTube bereikt, morgen weer.' : 'Fout: ' + e.message); return;
+  }
+  busy = false; $('#refresh').disabled = false; render();
+}
+$('#refresh').onclick = refresh;
+
+render();
+if (S.key && (!S.feed || Date.now() - S.feed.at > 3*3600000)) refresh();
+</script>
+</body>
+</html>
